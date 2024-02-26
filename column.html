@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+  <body>
+    <div>
+      <canvas id="chart"></canvas>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    
+    <script>
+      const searchParams = new URLSearchParams(window.location.search);
+      
+      const params = {
+        url: searchParams.get("url"),
+        data: searchParams.get("data"),
+        label: searchParams.get("label"),
+        offset: searchParams.has("offset") ? Number(searchParams.get("offset")) : 0,
+        limit: searchParams.has("limit") ? Number(searchParams.get("limit")) : Infinity,
+        tooltip: searchParams.has("tooltip") ? searchParams.get("tooltip") : null
+      };
+
+      console.log("params:", params);
+
+      fetch(params.url)
+        .then(function (response) { return response.json(); })
+        .then(function (json) {
+          console.log("json:", json);
+
+          const items = json.slice(params.offset, params.offset + params.limit);
+
+          const data = items.map(function (it) { return Number(it[params.data] || 0); });
+          const labels = items.map(function (it) { return it[params.label] });
+
+          console.log({data, labels});
+
+          const canvas = document.getElementById('chart');
+
+          Chart.register(ChartDataLabels);
+
+          const chart = new Chart(canvas, {
+            type: 'bar',
+            data: {
+              labels: labels,
+              datasets: [{
+                data: data,
+                borderWidth: 1
+              }]
+            },
+            options: {
+              plugins: {
+                datalabels: {
+                  anchor: "end",
+                  align: "bottom"
+                },
+                legend: false,
+                tooltip: params.tooltip && {
+                  xAlign: "center",
+                  yAlign: "top",
+                  callbacks: {
+                    label: function (context) {
+                      console.log("context:", context);
+                      const value = items[context.datasetIndex][params.tooltip];
+                      return params.tooltip + ": " + value;
+                    }
+                  }
+                }
+              },
+              scales: {
+                y: {
+                  beginAtZero: true
+                }
+              }
+            }
+          });
+        });
+
+    </script>
+  </body>
+</html>
