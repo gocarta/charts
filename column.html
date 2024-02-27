@@ -1,7 +1,14 @@
 <!DOCTYPE html>
 <html>
+  <head>
+    <style>
+      #chart {
+
+      }
+    </style>
+  </head>
   <body>
-    <div>
+    <div id="chart-container" style="position: relative; width: 100%;">
       <canvas id="chart"></canvas>
     </div>
     
@@ -9,18 +16,30 @@
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
     
     <script>
+      const container = document.getElementById("chart-container");
+
       const searchParams = new URLSearchParams(window.location.search);
-      
+
       const params = {
         url: searchParams.get("url"),
         data: searchParams.get("data"),
+        height: searchParams.has("height") ? Number(searchParams.get("height")) : null,
         label: searchParams.get("label"),
         offset: searchParams.has("offset") ? Number(searchParams.get("offset")) : 0,
         limit: searchParams.has("limit") ? Number(searchParams.get("limit")) : Infinity,
-        tooltip: searchParams.has("tooltip") ? searchParams.get("tooltip") : null
+        tooltip: searchParams.has("tooltip") ? searchParams.get("tooltip") : null,
+        width: searchParams.has("width") ? Number(searchParams.get("width")) : null,
       };
 
       console.log("params:", params);
+
+      if (typeof params.height === "number") {
+        container.style.height = params.height + "px";
+      }
+
+      if (typeof params.width === "number") {
+        container.style.width = params.width + "px";
+      }
 
       fetch(params.url)
         .then(function (response) { return response.json(); })
@@ -36,6 +55,7 @@
 
           const canvas = document.getElementById('chart');
 
+
           Chart.register(ChartDataLabels);
 
           const chart = new Chart(canvas, {
@@ -48,6 +68,9 @@
               }]
             },
             options: {
+              layout: {
+
+              },
               plugins: {
                 datalabels: {
                   anchor: "end",
