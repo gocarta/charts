@@ -22,6 +22,8 @@
 
       const params = {
         url: searchParams.get("url"),
+        backgroundColor: searchParams.get("backgroundColor"),
+        color: searchParams.get("color"),
         data: searchParams.get("data"),
         height: searchParams.has("height") ? Number(searchParams.get("height")) : null,
         label: searchParams.get("label"),
@@ -86,6 +88,7 @@
               labels: labels,
               datasets: [{
                 data: data,
+                backgroundColor: params.backgroundColor,
                 borderWidth: 1
               }]
             },
@@ -97,6 +100,7 @@
                 datalabels: {
                   anchor: "end",
                   align: "bottom",
+                  color: params.color,
                   rotation: -90,
                   formatter: function (value, context) {
                     return value.toLocaleString();
