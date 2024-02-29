@@ -40,6 +40,8 @@
         data: searchParams.get("data"),
         data_type: searchParams.get("data_type"),
         currency: searchParams.get("currency"),
+        filter_key: searchParams.get("filter_key"),
+        filter_value: searchParams.get("filter_value"),
         height: searchParams.has("height") ? Number(searchParams.get("height")) : null,
         label: searchParams.get("label"),
         offset: searchParams.has("offset") ? Number(searchParams.get("offset")) : 0,
@@ -76,7 +78,17 @@
         .then(function (json) {
           console.log("json:", json);
 
-          const items = json.slice(params.offset, params.offset + params.limit);
+          let items = json;
+
+          if (typeof params.filter_key === "string" && typeof params.filter_value === "string") {
+            items = items.filter(function (item) {
+              return item[params.filter_key] === params.filter_value;
+            });
+            console.log("aftering filtering, items.length is", items.length);
+          }
+
+          items = items.slice(params.offset, params.offset + params.limit);
+          console.log("after slicing, items.length is", items.length);
 
           if (typeof params.order === "string") {
             items.sort(function (a, b) {

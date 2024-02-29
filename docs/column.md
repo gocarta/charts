@@ -1,6 +1,10 @@
 # column chart
 This is a vertical bar chart.
 
+## demo
+https://officeofperformancemanagement.github.io/charts/v0/column.html?url=https://www.chattadata.org/resource/nvdi-c4tt.json&data=posted_speed&label=street&limit=10&filter_key=pedestrian_involved&filter_value=Yes
+
+
 ## url params
 | name | example | description |
 | ---- | ------- | ----------- |
@@ -15,5 +19,7 @@ This is a vertical bar chart.
 | currency | USD | if data_type is currency, set this or it defaults to USD. Euros is EUR. |
 | title | State Sales Tax | title of the chart |
 | subtitle | Last 12 Months | subtitle of the chart |
+| filter_key | pedestrian_involved | item key to filter on |
+| filter_value | Yes | value of item property/key to filter on |
 
 <img width="776" alt="Screenshot 2024-02-28 at 10 50 41 PM" src="https://github.com/officeofperformancemanagement/charts/assets/4313463/61e266c2-7604-485f-8a8a-8e870fc718cb">
