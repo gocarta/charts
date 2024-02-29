@@ -7,7 +7,7 @@
       }
     </style>
   </head>
-  <body>
+  <body style="margin: 0">
     <div id="chart-container" style="position: relative; width: 100%;">
       <canvas id="chart"></canvas>
     </div>
@@ -26,6 +26,7 @@
         height: searchParams.has("height") ? Number(searchParams.get("height")) : null,
         label: searchParams.get("label"),
         offset: searchParams.has("offset") ? Number(searchParams.get("offset")) : 0,
+        order: searchParams.has("order") ? searchParams.get("order") : null,
         limit: searchParams.has("limit") ? Number(searchParams.get("limit")) : Infinity,
         tooltip: searchParams.has("tooltip") ? searchParams.get("tooltip") : null,
         width: searchParams.has("width") ? Number(searchParams.get("width")) : null,
@@ -48,7 +49,28 @@
 
           const items = json.slice(params.offset, params.offset + params.limit);
 
+          if (typeof params.order === "string") {
+            items.sort(function (a, b) {
+              let order = params.order;
+
+              let m = 1;
+              if (order.startsWith("-")) {
+                order = order.substring(1);
+                m = -1;
+              }
+
+              a = a[params.order];
+              b = b[params.order];
+              if (typeof a === "string") a = new Date(a).getTime();
+              if (typeof b === "string") b = new Date(b).getTime();
+              if (a > b) return 1 * m;
+              if (a === b) return 0;
+              if (a < b) return -1 * m;
+            });
+          }
+
           const data = items.map(function (it) { return Number(it[params.data] || 0); });
+
           const labels = items.map(function (it) { return it[params.label] });
 
           console.log({data, labels});
@@ -74,7 +96,11 @@
               plugins: {
                 datalabels: {
                   anchor: "end",
-                  align: "bottom"
+                  align: "bottom",
+                  rotation: -90,
+                  formatter: function (value, context) {
+                    return value.toLocaleString();
+                  }
                 },
                 legend: false,
                 tooltip: params.tooltip && {
