@@ -13,5 +13,7 @@ This is a vertical bar chart.
 | color | %23F8F8F8 | url-escaped color of text in vertical bars |
 | data_type | currency | type of data values |
 | currency | USD | if data_type is currency, set this or it defaults to USD. Euros is EUR. |
+| title | State Sales Tax | title of the chart |
+| subtitle | Last 12 Months | subtitle of the chart |
 
 <img width="776" alt="Screenshot 2024-02-28 at 10 50 41 PM" src="https://github.com/officeofperformancemanagement/charts/assets/4313463/61e266c2-7604-485f-8a8a-8e870fc718cb">

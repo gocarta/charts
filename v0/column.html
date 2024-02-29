@@ -2,12 +2,25 @@
 <html>
   <head>
     <style>
+      #title {
+        font-family: sans-serif;
+        font-size: 20px;
+        font-weight: bold;
+      }
+      #subtitle {
+        color: rgb(105, 105, 105);
+        font-size: 14px;
+        font-weight: normal;
+      }
       #chart {
 
       }
     </style>
   </head>
   <body style="margin: 0">
+    <div id="title" style="display: none">Chart Title</div>
+    <div id="subtitle" style="display: none">Chart Subtitle</div>
+    <br>
     <div id="chart-container" style="position: relative; width: 100%;">
       <canvas id="chart"></canvas>
     </div>
@@ -32,11 +45,23 @@
         offset: searchParams.has("offset") ? Number(searchParams.get("offset")) : 0,
         order: searchParams.has("order") ? searchParams.get("order") : null,
         limit: searchParams.has("limit") ? Number(searchParams.get("limit")) : Infinity,
+        title: searchParams.get("title"),
+        subtitle: searchParams.get("subtitle"),
         tooltip: searchParams.has("tooltip") ? searchParams.get("tooltip") : null,
         width: searchParams.has("width") ? Number(searchParams.get("width")) : null,
       };
 
       console.log("params:", params);
+
+      if (params.title) {
+        document.getElementById("title").textContent = params.title;
+        document.getElementById("title").style.display = null;
+      }
+
+      if (params.subtitle) {
+        document.getElementById("subtitle").textContent = params.subtitle;
+        document.getElementById("subtitle").style.display = null;
+      }
 
       if (typeof params.height === "number") {
         container.style.height = params.height + "px";
@@ -126,6 +151,11 @@
                 }
               },
               scales: {
+                x: {
+                  grid: {
+                    display: false
+                  }
+                },
                 y: {
                   beginAtZero: true,
                   ticks: {
