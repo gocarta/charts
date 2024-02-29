@@ -25,6 +25,8 @@
         backgroundColor: searchParams.get("backgroundColor"),
         color: searchParams.get("color"),
         data: searchParams.get("data"),
+        data_type: searchParams.get("data_type"),
+        currency: searchParams.get("currency"),
         height: searchParams.has("height") ? Number(searchParams.get("height")) : null,
         label: searchParams.get("label"),
         offset: searchParams.has("offset") ? Number(searchParams.get("offset")) : 0,
@@ -103,7 +105,11 @@
                   color: params.color,
                   rotation: -90,
                   formatter: function (value, context) {
-                    return value.toLocaleString();
+                    if (params.data_type === "currency") {
+                      return value.toLocaleString("en-us", { style: "currency", currency: params.currency || "USD" });
+                    } else {
+                      return value.toLocaleString();
+                    }
                   }
                 },
                 legend: false,
