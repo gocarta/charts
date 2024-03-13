@@ -46,6 +46,7 @@
         data_type: searchParams.get("data_type"),
         currency: searchParams.get("currency"),
         filter_key: searchParams.get("filter_key"),
+        filter_method: searchParams.has("filter_method") ? searchParams.get("filter_method") : "=",
         filter_value: searchParams.get("filter_value"),
         group: searchParams.has("group") ? ["True", "true"].includes(searchParams.get("group")) : false,
         height: searchParams.has("height") ? Number(searchParams.get("height")) : null,
@@ -103,7 +104,11 @@
 
           if (typeof params.filter_key === "string" && typeof params.filter_value === "string") {
             items = items.filter(function (item) {
-              return item[params.filter_key] === params.filter_value;
+              if (params.filter_method === "in") {
+                return params.filter_value.split(",").indexOf(item[params.filter_key]) !== -1;
+              } else {
+                return item[params.filter_key] === params.filter_value;
+              }
             });
             console.log("aftering filtering, items.length is", items.length);
           }

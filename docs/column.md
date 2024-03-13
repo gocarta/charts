@@ -26,5 +26,6 @@ https://officeofperformancemanagement.github.io/charts/v0/column.html?url=https:
 | subtitle | Last 12 Months | subtitle of the chart |
 | filter_key | pedestrian_involved | item key to filter on |
 | filter_value | Yes | value of item property/key to filter on |
+| filter_method | in | default value is to look for an exact match. using "in" assumes filter_value is an array of acceptable values |
 
 <img width="776" alt="Screenshot 2024-02-28 at 10 50 41 PM" src="https://github.com/officeofperformancemanagement/charts/assets/4313463/61e266c2-7604-485f-8a8a-8e870fc718cb">
