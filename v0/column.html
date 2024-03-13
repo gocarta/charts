@@ -31,7 +31,7 @@
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
-    
+    <script src="https://unpkg.com/papaparse@5.4.1/papaparse.min.js"></script>
     <script>
       const container = document.getElementById("chart-container");
 
@@ -48,6 +48,7 @@
         filter_key: searchParams.get("filter_key"),
         filter_method: searchParams.has("filter_method") ? searchParams.get("filter_method") : "=",
         filter_value: searchParams.get("filter_value"),
+        format: searchParams.has("format") ? searchParams.get("format").toLowerCase() : "json",
         group: searchParams.has("group") ? ["True", "true"].includes(searchParams.get("group")) : false,
         height: searchParams.has("height") ? Number(searchParams.get("height")) : null,
         label: searchParams.get("label"),
@@ -95,7 +96,13 @@
             throw Error("error");
           }
 
-          return response.json();
+          if (params.format === "csv") {
+            return response.text().then(text => {
+              return Papa.parse(text, { header: true }).data;
+            });
+          } else {
+            return response.json();
+          }
         })
         .then(function (json) {
           console.log("json:", json);

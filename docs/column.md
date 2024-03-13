@@ -13,6 +13,7 @@ https://officeofperformancemanagement.github.io/charts/v0/column.html?url=https:
 | label | accounting_period_name | name to display for each item |
 | data_type | currency | type of data values |
 | group | true | group all data values with matching label (like a histogram) |
+| format | csv | default is json, file format of source data from the url |
 
 ## optional params
 | name | example | description |
