@@ -85,7 +85,12 @@
 
       function write_error_to_screen(message) {
         document.getElementById("error-message").textContent = message;
-        document.getElementById("error-wrapper").style.display = null;        
+        document.getElementById("error-wrapper").style.display = null;
+        throw new Error(message);
+      }
+
+      if (searchParams.has("group") && ["True", "true", "False", "false"].indexOf(searchParams.get("group")) === -1) {
+        write_error_to_screen('param "group" is invalid.  should be "true" or "false".');
       }
 
       fetch(params.url)
@@ -93,7 +98,6 @@
           console.log("response.status:", response.status);
           if (!response.ok) {
             write_error_to_screen("fetch returned status code of " + Number(response.status));
-            throw Error("error");
           }
 
           if (params.format === "csv") {
@@ -178,7 +182,6 @@
                 data[igroup] += Math.min(data[igroup], item_data);
               } else {
                 write_error_to_screen("unknown method in url params");
-                throw Error("missing method");
               }
               console.log(JSON.stringify({data}));
             }
