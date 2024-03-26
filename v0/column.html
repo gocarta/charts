@@ -33,235 +33,255 @@
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
     <script src="https://unpkg.com/papaparse@5.4.1/papaparse.min.js"></script>
     <script>
-      const container = document.getElementById("chart-container");
+      function render() {
+        window.app = {
+          innerWidth: window.innerWidth
+        };
 
-      const searchParams = new URLSearchParams(window.location.search);
+        const container = document.getElementById("chart-container");
 
-      const params = {
-        url: searchParams.get("url"),
-        backgroundColor: searchParams.get("backgroundColor"),
-        color: searchParams.has("color") ? searchParams.get("color") : "black",
-        data: searchParams.get("data"),
-        data_label_rotation: searchParams.has("data_label_rotation") ? Number(searchParams.get("data_label_rotation")) : 0,
-        data_type: searchParams.get("data_type"),
-        currency: searchParams.get("currency"),
-        filter_key: searchParams.get("filter_key"),
-        filter_method: searchParams.has("filter_method") ? searchParams.get("filter_method") : "=",
-        filter_value: searchParams.get("filter_value"),
-        format: searchParams.has("format") ? searchParams.get("format").toLowerCase() : "json",
-        group: searchParams.has("group") ? ["True", "true"].includes(searchParams.get("group")) : false,
-        height: searchParams.has("height") ? Number(searchParams.get("height")) : null,
-        label: searchParams.get("label"),
-        offset: searchParams.has("offset") ? Number(searchParams.get("offset")) : 0,
-        order: searchParams.has("order") ? searchParams.get("order") : null,
-        order_data_type: searchParams.has("order_data_type") ? searchParams.get("order_data_type") : null,
-        limit: searchParams.has("limit") ? Number(searchParams.get("limit")) : Infinity,
-        method: searchParams.has("method") ? searchParams.get("method") : "count",
-        title: searchParams.get("title"),
-        subtitle: searchParams.get("subtitle"),
-        tooltip: searchParams.has("tooltip") ? searchParams.get("tooltip") : null,
-        width: searchParams.has("width") ? Number(searchParams.get("width")) : null,
-      };
+        const searchParams = new URLSearchParams(window.location.search);
 
-      console.log("params:", params);
+        const params = {
+          url: searchParams.get("url"),
+          backgroundColor: searchParams.get("backgroundColor"),
+          color: searchParams.has("color") ? searchParams.get("color") : "black",
+          data: searchParams.get("data"),
+          data_label_rotation: searchParams.has("data_label_rotation") ? Number(searchParams.get("data_label_rotation")) : 0,
+          data_type: searchParams.get("data_type"),
+          currency: searchParams.get("currency"),
+          filter_key: searchParams.get("filter_key"),
+          filter_method: searchParams.has("filter_method") ? searchParams.get("filter_method") : "=",
+          filter_value: searchParams.get("filter_value"),
+          format: searchParams.has("format") ? searchParams.get("format").toLowerCase() : "json",
+          group: searchParams.has("group") ? ["True", "true"].includes(searchParams.get("group")) : false,
+          height: searchParams.has("height") ? Number(searchParams.get("height")) : null,
+          label: searchParams.get("label"),
+          offset: searchParams.has("offset") ? Number(searchParams.get("offset")) : 0,
+          order: searchParams.has("order") ? searchParams.get("order") : null,
+          order_data_type: searchParams.has("order_data_type") ? searchParams.get("order_data_type") : null,
+          limit: searchParams.has("limit") ? Number(searchParams.get("limit")) : Infinity,
+          method: searchParams.has("method") ? searchParams.get("method") : "count",
+          title: searchParams.get("title"),
+          subtitle: searchParams.get("subtitle"),
+          tooltip: searchParams.has("tooltip") ? searchParams.get("tooltip") : null,
+          width: searchParams.has("width") ? Number(searchParams.get("width")) : null,
+        };
 
-      if (params.title) {
-        document.getElementById("title").textContent = params.title;
-        document.getElementById("title").style.display = null;
-      }
+        console.log("params:", params);
 
-      if (params.subtitle) {
-        document.getElementById("subtitle").textContent = params.subtitle;
-        document.getElementById("subtitle").style.display = null;
-      }
+        if (params.title) {
+          document.getElementById("title").textContent = params.title;
+          document.getElementById("title").style.display = null;
+        }
 
-      if (typeof params.height === "number") {
-        container.style.height = params.height + "px";
-      }
+        if (params.subtitle) {
+          document.getElementById("subtitle").textContent = params.subtitle;
+          document.getElementById("subtitle").style.display = null;
+        }
 
-      if (typeof params.width === "number") {
-        container.style.width = params.width + "px";
-      }
+        if (typeof params.height === "number") {
+          container.style.height = params.height + "px";
+        }
 
-      function write_error_to_screen(message) {
-        document.getElementById("error-message").textContent = message;
-        document.getElementById("error-wrapper").style.display = null;
-        throw new Error(message);
-      }
+        if (typeof params.width === "number") {
+          container.style.width = params.width + "px";
+        }
 
-      if (searchParams.has("group") && ["True", "true", "False", "false"].indexOf(searchParams.get("group")) === -1) {
-        write_error_to_screen('param "group" is invalid.  should be "true" or "false".');
-      }
+        function write_error_to_screen(message) {
+          document.getElementById("error-message").textContent = message;
+          document.getElementById("error-wrapper").style.display = null;
+          throw new Error(message);
+        }
 
-      fetch(params.url)
-        .then(function (response) {
-          console.log("response.status:", response.status);
-          if (!response.ok) {
-            write_error_to_screen("fetch returned status code of " + Number(response.status));
-          }
+        if (searchParams.has("group") && ["True", "true", "False", "false"].indexOf(searchParams.get("group")) === -1) {
+          write_error_to_screen('param "group" is invalid.  should be "true" or "false".');
+        }
 
-          if (params.format === "csv") {
-            return response.text().then(text => {
-              return Papa.parse(text, { header: true }).data;
-            });
-          } else {
-            return response.json();
-          }
-        })
-        .then(function (json) {
-          console.log("json:", json);
-
-          let items = json;
-
-          if (typeof params.filter_key === "string" && typeof params.filter_value === "string") {
-            items = items.filter(function (item) {
-              if (params.filter_method === "in") {
-                return params.filter_value.split(",").indexOf(item[params.filter_key]) !== -1;
-              } else {
-                return item[params.filter_key] === params.filter_value;
-              }
-            });
-            console.log("aftering filtering, items.length is", items.length);
-          }
-
-          items = items.slice(params.offset, params.offset + params.limit);
-          console.log("after slicing, items.length is", items.length);
-
-          if (typeof params.order === "string") {
-            items.sort(function (a, b) {
-              let order = params.order;
-
-              let m = 1;
-              if (order.startsWith("-")) {
-                order = order.substring(1);
-                m = -1;
-              }
-
-              a = a[params.order];
-              b = b[params.order];
-              if (params.order_data_type === "number") {
-                a = Number(a);
-                b = Number(b);
-              } else if (params.order_data_type === "date") {
-                if (typeof a === "string") a = new Date(a).getTime();
-                if (typeof b === "string") b = new Date(b).getTime();
-              }
-              if (a > b) return 1 * m;
-              if (a === b) return 0;
-              if (a < b) return -1 * m;
-            });
-            console.log("sorted by " + params.order);
-          }
-
-          let labels;
-          let data;
-
-          if (params.group) {
-            labels = [];
-            data = [];
-            for (let i = 0; i < items.length; i++) {
-              const item = items[i];
-              const group = item[params.label];
-              const item_data =  Number(item[params.data]);
-              const igroup = labels.indexOf(group);
-              if (params.method === "count") {
-                if (igroup === -1) {
-                  labels.push(group);
-                  data.push(1);
-                } else {
-                  data[igroup]++;
-                }
-              } else if (igroup == -1) {
-                labels.push(group);
-                data.push(item_data);
-              } else if (params.method === "sum") {
-                data[igroup] += item_data;
-              } else if (params.method === "max") {
-                data[igroup] += Math.max(data[igroup], item_data);
-              } else if (params.method === "min") {
-                data[igroup] += Math.min(data[igroup], item_data);
-              } else {
-                write_error_to_screen("unknown method in url params");
-              }
-              console.log(JSON.stringify({data}));
+        fetch(params.url)
+          .then(function (response) {
+            console.log("response.status:", response.status);
+            if (!response.ok) {
+              write_error_to_screen("fetch returned status code of " + Number(response.status));
             }
-          } else {
-            data = items.map(function (it) { return Number(it[params.data] || 0); });
-            labels = items.map(function (it) { return it[params.label] });
-          }
 
-          console.log({data, labels});
+            if (params.format === "csv") {
+              return response.text().then(text => {
+                return Papa.parse(text, { header: true }).data;
+              });
+            } else {
+              return response.json();
+            }
+          })
+          .then(function (json) {
+            console.log("json:", json);
 
-          const canvas = document.getElementById('chart');
+            let items = json;
 
-          Chart.register(ChartDataLabels);
-
-          const chart = new Chart(canvas, {
-            type: 'bar',
-            data: {
-              labels: labels,
-              datasets: [{
-                data: data,
-                backgroundColor: params.backgroundColor,
-                borderWidth: 1
-              }]
-            },
-            options: {
-              layout: {
-
-              },
-              plugins: {
-                datalabels: {
-                  anchor: "end",
-                  align: "bottom",
-                  color: params.color,
-                  rotation: params.data_label_rotation,
-                  formatter: function (value, context) {
-                    if (params.data_type === "currency") {
-                      return value.toLocaleString("en-us", { style: "currency", currency: params.currency || "USD" });
-                    } else {
-                      return value.toLocaleString();
-                    }
-                  }
-                },
-                legend: false,
-                tooltip: (params.tooltip && params.group === false) && {
-                  xAlign: "center",
-                  yAlign: "top",
-                  callbacks: {
-                    label: function (context) {
-                      console.log("context:", context);
-                      const value = items[context.datasetIndex][params.tooltip];
-                      return params.tooltip + ": " + value;
-                    }
-                  }
+            if (typeof params.filter_key === "string" && typeof params.filter_value === "string") {
+              items = items.filter(function (item) {
+                if (params.filter_method === "in") {
+                  return params.filter_value.split(",").indexOf(item[params.filter_key]) !== -1;
+                } else {
+                  return item[params.filter_key] === params.filter_value;
                 }
+              });
+              console.log("aftering filtering, items.length is", items.length);
+            }
+
+            items = items.slice(params.offset, params.offset + params.limit);
+            console.log("after slicing, items.length is", items.length);
+
+            if (typeof params.order === "string") {
+              items.sort(function (a, b) {
+                let order = params.order;
+
+                let m = 1;
+                if (order.startsWith("-")) {
+                  order = order.substring(1);
+                  m = -1;
+                }
+
+                a = a[params.order];
+                b = b[params.order];
+                if (params.order_data_type === "number") {
+                  a = Number(a);
+                  b = Number(b);
+                } else if (params.order_data_type === "date") {
+                  if (typeof a === "string") a = new Date(a).getTime();
+                  if (typeof b === "string") b = new Date(b).getTime();
+                }
+                if (a > b) return 1 * m;
+                if (a === b) return 0;
+                if (a < b) return -1 * m;
+              });
+              console.log("sorted by " + params.order);
+            }
+
+            let labels;
+            let data;
+
+            if (params.group) {
+              labels = [];
+              data = [];
+              for (let i = 0; i < items.length; i++) {
+                const item = items[i];
+                const group = item[params.label];
+                const item_data =  Number(item[params.data]);
+                const igroup = labels.indexOf(group);
+                if (params.method === "count") {
+                  if (igroup === -1) {
+                    labels.push(group);
+                    data.push(1);
+                  } else {
+                    data[igroup]++;
+                  }
+                } else if (igroup == -1) {
+                  labels.push(group);
+                  data.push(item_data);
+                } else if (params.method === "sum") {
+                  data[igroup] += item_data;
+                } else if (params.method === "max") {
+                  data[igroup] += Math.max(data[igroup], item_data);
+                } else if (params.method === "min") {
+                  data[igroup] += Math.min(data[igroup], item_data);
+                } else {
+                  write_error_to_screen("unknown method in url params");
+                }
+                console.log(JSON.stringify({data}));
+              }
+            } else {
+              data = items.map(function (it) { return Number(it[params.data] || 0); });
+              labels = items.map(function (it) { return it[params.label] });
+            }
+
+            console.log({data, labels});
+
+            const canvas = document.getElementById('chart');
+
+            Chart.register(ChartDataLabels);
+
+            app.chart = new Chart(canvas, {
+              type: 'bar',
+              data: {
+                labels: labels,
+                datasets: [{
+                  data: data,
+                  backgroundColor: params.backgroundColor,
+                  borderWidth: 1
+                }]
               },
-              scales: {
-                x: {
-                  grid: {
-                    display: false
+              options: {
+                layout: {
+
+                },
+                plugins: {
+                  datalabels: {
+                    anchor: "end",
+                    align: "bottom",
+                    color: params.color,
+                    rotation: params.data_label_rotation,
+                    formatter: function (value, context) {
+                      if (params.data_type === "currency") {
+                        return value.toLocaleString("en-us", { style: "currency", currency: params.currency || "USD" });
+                      } else {
+                        return value.toLocaleString();
+                      }
+                    }
+                  },
+                  legend: false,
+                  tooltip: (params.tooltip && params.group === false) && {
+                    xAlign: "center",
+                    yAlign: "top",
+                    callbacks: {
+                      label: function (context) {
+                        console.log("context:", context);
+                        const value = items[context.datasetIndex][params.tooltip];
+                        return params.tooltip + ": " + value;
+                      }
+                    }
                   }
                 },
-                y: {
-                  beginAtZero: true,
-                  ticks: {
-                    callback: function (value, index, ticks) {
-                      if (value >= 1000 && value < 1000000) {
-                        return value / 1000 + "K";
-                      } else if (value >= 1000000 && value < 1000000000) {
-                        return value / 1000000 + "M";
-                      } else {
-                        return value;
+                scales: {
+                  x: {
+                    grid: {
+                      display: false
+                    }
+                  },
+                  y: {
+                    beginAtZero: true,
+                    ticks: {
+                      callback: function (value, index, ticks) {
+                        if (value >= 1000 && value < 1000000) {
+                          return value / 1000 + "K";
+                        } else if (value >= 1000000 && value < 1000000000) {
+                          return value / 1000000 + "M";
+                        } else {
+                          return value;
+                        }
                       }
                     }
                   }
                 }
               }
-            }
+            });
           });
-        });
+      }
 
+      render();
+
+      setInterval(function () {
+        if (Math.abs(window.innerWidth - window.app.innerWidth) > 50) {
+          window.app.innerWidth = window.innerWidth;
+          console.log("resizing");
+          try {
+            app.chart.destroy();
+          } catch (error) {
+            console.error(error);
+          }
+          render();
+        }
+      }, 500);
     </script>
   </body>
 </html>
