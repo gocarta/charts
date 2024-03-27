@@ -230,7 +230,7 @@
                     }
                   },
                   legend: false,
-                  tooltip: (params.tooltip && params.group === false) && {
+                  tooltip: params.tooltip && params.group === false ? {
                     xAlign: "center",
                     yAlign: "top",
                     callbacks: {
@@ -240,7 +240,7 @@
                         return params.tooltip + ": " + value;
                       }
                     }
-                  }
+                  } : undefined
                 },
                 scales: {
                   x: {
