@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      html  {
+        background: yellow;
+      }
+      #title {
+        font-family: sans-serif;
+        font-size: 20px;
+        font-weight: bold;
+      }
+      #subtitle {
+        color: rgb(105, 105, 105);
+        font-size: 14px;
+        font-weight: normal;
+      }
+      #chart {
+
+      }
+    </style>
+  </head>
+  <body style="margin: 0">
+    <div id="error-wrapper" style="display: none; background: lightcoral; position: absolute; top: 0; left: 0; right: 0; bottom: 0">
+      <div id="error-message" style="background: whitesmoke; padding: 30px; border-radius: 15px; position: absolute; text-align: center; top: 50%; left: 50%; transform: translate(-50%, -50%)"></div>
+    </div>
+
+    <div id="title" style="display: none">Chart Title</div>
+    <div id="subtitle" style="display: none">Chart Subtitle</div>
+    <br>
+    <div id="chart-container" style="position: relative; width: 100%;">
+      <canvas id="chart"></canvas>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    <script>
+      function render() {
+        window.app = {
+          innerWidth: window.innerWidth
+        };
+
+        const container = document.getElementById("chart-container");
+
+        const searchParams = new URLSearchParams(window.location.search);
+
+        ["labels", "ucl", "cl", "lcl", "data"].forEach(function(key) {
+          if (searchParams.has(key) === false) {
+            write_error_to_screen("missing " + key);
+          }
+        });
+
+        const params = {
+          backgroundColor: searchParams.get("backgroundColor"),
+          labels: searchParams.get("labels").split(","),
+          data: searchParams.get("data").split(","),
+          ucl: searchParams.get("ucl"),
+          ucl_label: searchParams.get("ucl_label"),
+          cl: searchParams.get("cl"),
+          cl_label: searchParams.get("cl_label"),
+          lcl: searchParams.get("lcl"),
+          lcl_label: searchParams.get("lcl_label"),
+          title: searchParams.get("title"),
+          subtitle: searchParams.get("subtitle"),
+          height: searchParams.has("height") ? Number(searchParams.get("height")) : null,
+          width: searchParams.has("width") ? Number(searchParams.get("width")) : null
+        }
+
+        console.log("params:", params);
+
+        if (params.title) {
+          document.getElementById("title").textContent = params.title;
+          document.getElementById("title").style.display = null;
+        }
+
+        if (params.subtitle) {
+          document.getElementById("subtitle").textContent = params.subtitle;
+          document.getElementById("subtitle").style.display = null;
+        }
+
+        if (typeof params.height === "number") {
+          container.style.height = params.height + "px";
+        }
+
+        if (typeof params.width === "number") {
+          container.style.width = params.width + "px";
+        }
+
+        function write_error_to_screen(message) {
+          document.getElementById("error-message").textContent = message;
+          document.getElementById("error-wrapper").style.display = null;
+          throw new Error(message);
+        }
+
+        data = params.data.map(function (it) { return Number(it) || 0; });
+
+        const canvas = document.getElementById('chart');
+
+        Chart.register(ChartDataLabels);
+
+        app.chart = new Chart(canvas, {
+          type: 'line',
+          data: {
+            labels: params.labels,
+            datasets: [{
+              label: "Metric",
+              data: data,
+              fill: false,
+              backgroundColor: params.backgroundColor,
+              tension: 0.1
+            }]
+          }
+        });
+      }
+
+      render();
+
+      setInterval(function () {
+        if (Math.abs(window.innerWidth - window.app.innerWidth) > 50) {
+          window.app.innerWidth = window.innerWidth;
+          console.log("resizing");
+          try {
+            app.chart.destroy();
+          } catch (error) {
+            console.error(error);
+          }
+          render();
+        }
+      }, 500);
+    </script>
+  </body>
+</html>
