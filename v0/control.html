@@ -58,6 +58,20 @@
           title: searchParams.get("title")
         };
 
+        if (params.ucl === undefined || params.ucl === "") {
+          write_error_to_screen("missing upper control limit (ucl)");
+        }
+
+        if (params.lcl === undefined || params.lcl === "") {
+          write_error_to_screen("missing lower control limit (lcl)");
+        }
+
+        ["labels", "data", "title"].forEach(function(key) {
+          if (params[key] === undefined || params[key] === "") {
+            write_error_to_screen("missing " + key);
+          }
+        });
+
         Object.assign(app.state, params);
 
         console.log("params:", params);
