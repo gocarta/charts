@@ -87,7 +87,12 @@
           throw new Error(message);
         }
 
-        data = params.data.map(function (it) { return Number(it) || 0; });
+        var data = params.data.map(function (it) {
+          if (it === "") return null;
+          if (isNaN(Number(it)) === false) return Number(it);
+          return null;
+        });
+        console.log("data:", data);
 
         const canvas = document.getElementById('chart');
 
