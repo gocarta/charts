@@ -50,8 +50,8 @@
 
         const params = {
           backgroundColor: searchParams.get("backgroundColor"),
-          labels: searchParams.get("labels").split(","),
-          data: searchParams.get("data").split(","),
+          labels: searchParams.get("labels").split(";"),
+          data: searchParams.get("data").split(";"),
           ucl: searchParams.get("ucl"),
           cl: searchParams.get("cl"),
           lcl: searchParams.get("lcl"),
@@ -69,6 +69,8 @@
         }
 
         var data = params.data.map(function (it) {
+          it = it.replace(/,/g, ""); // clean , in numbers
+
           if (it === "") return null;
           if (isNaN(Number(it)) === false) return Number(it);
           return null;
