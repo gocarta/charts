@@ -108,7 +108,7 @@
               },
               {
                 label: "UCL",
-                data: range(data.length).map(() => Number(params.ucl)),
+                data: range(Math.max(data.length, params.labels.length)).map(() => Number(params.ucl)),
                 fill: false,
                 backgroundColor: params.backgroundColor,
                 borderDash: [5, 5],
@@ -116,7 +116,7 @@
               },
               {
                 label: "LCL",
-                data: range(data.length).map(() => Number(params.lcl)),
+                data: range(Math.max(data.length, params.labels.length)).map(() => Number(params.lcl)),
                 fill: false,
                 backgroundColor: params.backgroundColor,
                 borderDash: [5, 5],
