@@ -46,7 +46,7 @@
 
         const searchParams = new URLSearchParams(window.location.search);
 
-        ["labels", "ucl", "cl", "lcl", "data", "title"].forEach(function(key) {
+        ["labels", "ucl", "lcl", "data", "title"].forEach(function(key) {
           if (searchParams.has(key) === false) {
             write_error_to_screen("missing " + key);
           }
