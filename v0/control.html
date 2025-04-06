@@ -5,20 +5,6 @@
       html  {
         background: lightblue;
       }
-      #title {
-        font-family: sans-serif;
-        font-size: 20px;
-        font-weight: bold;
-        height: 30px;
-        text-align: center;
-      }
-      #subtitle {
-        color: rgb(105, 105, 105);
-        font-size: 14px;
-        font-weight: normal;
-        height: 20px;
-        text-align: center;
-      }
       #chart {
         transform: translateX(-50%);
         left: 50%;
@@ -77,7 +63,6 @@
           lcl: searchParams.get("lcl"),
           lcl_label: searchParams.get("lcl_label"),
           title: searchParams.get("title"),
-          subtitle: searchParams.get("subtitle"),
           height: searchParams.has("height") ? Number(searchParams.get("height")) : null,
           width: searchParams.has("width") ? Number(searchParams.get("width")) : null
         };
@@ -118,7 +103,6 @@
                 data: data,
                 fill: false,
                 backgroundColor: params.backgroundColor,
-                // pointBackgroundColor: params.backgroundColor,
                 pointRadius: 5,
                 tension: 0.1
               },
