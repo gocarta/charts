@@ -3,31 +3,41 @@
   <head>
     <style>
       html  {
-        background: yellow;
+        background: lightblue;
       }
       #title {
         font-family: sans-serif;
         font-size: 20px;
         font-weight: bold;
+        height: 30px;
+        text-align: center;
       }
       #subtitle {
         color: rgb(105, 105, 105);
         font-size: 14px;
         font-weight: normal;
+        height: 20px;
+        text-align: center;
       }
       #chart {
-
+        transform: translateX(-50%);
+        left: 50%;
+        position: absolute;
       }
     </style>
+    <script>
+      window.app = {
+        state: {
+
+        }
+      };
+    </script>
   </head>
   <body style="margin: 0">
     <div id="error-wrapper" style="display: none; background: lightcoral; position: absolute; top: 0; left: 0; right: 0; bottom: 0">
       <div id="error-message" style="background: whitesmoke; padding: 30px; border-radius: 15px; position: absolute; text-align: center; top: 50%; left: 50%; transform: translate(-50%, -50%)"></div>
     </div>
 
-    <div id="title" style="display: none">Chart Title</div>
-    <div id="subtitle" style="display: none">Chart Subtitle</div>
-    <br>
     <div id="chart-container" style="position: relative; width: 100%;">
       <canvas id="chart"></canvas>
     </div>
@@ -35,16 +45,22 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
     <script>
+      function range(n) {
+        const arr = [];
+        for (let i = 0; i < n; i++) arr.push(i);
+        return arr;
+      }
+
       function render() {
-        window.app = {
-          innerWidth: window.innerWidth
-        };
+        app.state.innerHeight = window.innerHeight;
+        app.state.innerWidth = window.innerWidth;
+        app.state.containerHeight = window.innerHeight;
 
         const container = document.getElementById("chart-container");
 
         const searchParams = new URLSearchParams(window.location.search);
 
-        ["labels", "ucl", "cl", "lcl", "data"].forEach(function(key) {
+        ["labels", "ucl", "cl", "lcl", "data", "title"].forEach(function(key) {
           if (searchParams.has(key) === false) {
             write_error_to_screen("missing " + key);
           }
@@ -64,22 +80,16 @@
           subtitle: searchParams.get("subtitle"),
           height: searchParams.has("height") ? Number(searchParams.get("height")) : null,
           width: searchParams.has("width") ? Number(searchParams.get("width")) : null
-        }
+        };
+
+        Object.assign(app.state, params);
 
         console.log("params:", params);
 
-        if (params.title) {
-          document.getElementById("title").textContent = params.title;
-          document.getElementById("title").style.display = null;
-        }
-
-        if (params.subtitle) {
-          document.getElementById("subtitle").textContent = params.subtitle;
-          document.getElementById("subtitle").style.display = null;
-        }
-
         if (typeof params.height === "number") {
           container.style.height = params.height + "px";
+        } else {
+          container.style.height = app.state.containerHeight + "px";
         }
 
         if (typeof params.width === "number") {
@@ -102,13 +112,88 @@
           type: 'line',
           data: {
             labels: params.labels,
-            datasets: [{
-              label: "Metric",
-              data: data,
-              fill: false,
-              backgroundColor: params.backgroundColor,
-              tension: 0.1
-            }]
+            datasets: [
+              {
+                label: "Metric",
+                data: data,
+                fill: false,
+                backgroundColor: params.backgroundColor,
+                // pointBackgroundColor: params.backgroundColor,
+                pointRadius: 5,
+                tension: 0.1
+              },
+              {
+                label: "UCL",
+                data: range(data.length).map(() => Number(params.ucl)),
+                fill: false,
+                backgroundColor: params.backgroundColor,
+                borderDash: [5, 5],
+                tension: 0.1             
+              },
+              {
+                label: "LCL",
+                data: range(data.length).map(() => Number(params.lcl)),
+                fill: false,
+                backgroundColor: params.backgroundColor,
+                borderDash: [5, 5],
+                tension: 0.1                
+              }              
+            ]
+          },
+          options: {
+            plugins: {
+              datalabels: {
+                anchor: "end",
+                align: "top",
+                color: "black",
+                rotation: params.data_label_rotation,
+                formatter: function (value, context) {
+                  console.log("context:", context);
+                  if (context.dataset.label === "LCL" || context.dataset.label === "UCL") {
+                    return "";
+                  } else if (params.data_type === "currency") {
+                    return value.toLocaleString("en-us", { style: "currency", currency: params.currency || "USD" });
+                  } else {
+                    return value.toLocaleString();
+                  }
+                }
+              },
+              legend: false,
+              title: {
+                display: true,
+                font: {
+                  size: 48
+                },
+                text: params.title,
+                padding: {
+                    top: 10,
+                    bottom: 30
+                }                
+            }              
+            },
+            scales: {
+              x: {
+                grid: {
+                  display: false
+                }
+              },
+              y: {
+                beginAtZero: true,
+                ticks: {
+                  callback: function (value, index, ticks) {
+                    if (value >= 0 && value <= 1) {
+                      return value.toFixed(2);
+                    } else if (value >= 1000 && value < 1000000) {
+                      return value / 1000 + "K";
+                    } else if (value >= 1000000 && value < 1000000000) {
+                      return value / 1000000 + "M";
+                    } else {
+                      return value;
+                    }
+                  }
+                }                
+              }
+            }
           }
         });
       }
@@ -116,8 +201,8 @@
       render();
 
       setInterval(function () {
-        if (Math.abs(window.innerWidth - window.app.innerWidth) > 50) {
-          window.app.innerWidth = window.innerWidth;
+        if (Math.abs(window.innerWidth - app.state.innerWidth) > 50) {
+          app.state.innerWidth = window.innerWidth;
           console.log("resizing");
           try {
             app.chart.destroy();
