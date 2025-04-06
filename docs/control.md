@@ -17,4 +17,4 @@ https://officeofperformancemanagement.github.io/v0/control.html?title=Performanc
 | ---- | ------- | ----------- |
 | title | Performance Metric Visualization | title of the chart |
 
-<img width="776" alt="Screenshot 2024-02-28 at 10 50 41 PM" src="https://github.com/officeofperformancemanagement/charts/assets/4313463/61e266c2-7604-485f-8a8a-8e870fc718cb">
+<img width="776" alt="Screenshot 2025-04-05 at 9 16 26 PM" src="https://github.com/user-attachments/assets/4125da02-2bc7-4297-a25f-42091dbcabef" />
