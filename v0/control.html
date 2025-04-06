@@ -24,7 +24,7 @@
       <div id="error-message" style="background: whitesmoke; padding: 30px; border-radius: 15px; position: absolute; text-align: center; top: 50%; left: 50%; transform: translate(-50%, -50%)"></div>
     </div>
 
-    <div id="chart-container" style="position: relative; width: 100%;">
+    <div id="chart-container" style="height: 100vh; position: relative; width: 100vw;">
       <canvas id="chart"></canvas>
     </div>
     
@@ -38,10 +38,6 @@
       }
 
       function render() {
-        app.state.innerHeight = window.innerHeight;
-        app.state.innerWidth = window.innerWidth;
-        app.state.containerHeight = window.innerHeight;
-
         const container = document.getElementById("chart-container");
 
         const searchParams = new URLSearchParams(window.location.search);
@@ -57,29 +53,14 @@
           labels: searchParams.get("labels").split(","),
           data: searchParams.get("data").split(","),
           ucl: searchParams.get("ucl"),
-          ucl_label: searchParams.get("ucl_label"),
           cl: searchParams.get("cl"),
-          cl_label: searchParams.get("cl_label"),
           lcl: searchParams.get("lcl"),
-          lcl_label: searchParams.get("lcl_label"),
-          title: searchParams.get("title"),
-          height: searchParams.has("height") ? Number(searchParams.get("height")) : null,
-          width: searchParams.has("width") ? Number(searchParams.get("width")) : null
+          title: searchParams.get("title")
         };
 
         Object.assign(app.state, params);
 
         console.log("params:", params);
-
-        if (typeof params.height === "number") {
-          container.style.height = params.height + "px";
-        } else {
-          container.style.height = app.state.containerHeight + "px";
-        }
-
-        if (typeof params.width === "number") {
-          container.style.width = params.width + "px";
-        }
 
         function write_error_to_screen(message) {
           document.getElementById("error-message").textContent = message;
@@ -130,6 +111,9 @@
             ]
           },
           options: {
+            layout: {
+              padding: 20
+            },
             plugins: {
               datalabels: {
                 anchor: "end",
@@ -137,7 +121,7 @@
                 color: "black",
                 rotation: params.data_label_rotation,
                 formatter: function (value, context) {
-                  console.log("context:", context);
+                  // console.log("context:", context);
                   if (context.dataset.label === "LCL" || context.dataset.label === "UCL") {
                     return "";
                   } else if (params.data_type === "currency") {
@@ -188,19 +172,6 @@
       }
 
       render();
-
-      setInterval(function () {
-        if (Math.abs(window.innerWidth - app.state.innerWidth) > 50) {
-          app.state.innerWidth = window.innerWidth;
-          console.log("resizing");
-          try {
-            app.chart.destroy();
-          } catch (error) {
-            console.error(error);
-          }
-          render();
-        }
-      }, 500);
     </script>
   </body>
 </html>
