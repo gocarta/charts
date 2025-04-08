@@ -2,8 +2,8 @@
 <html>
   <head>
     <style>
-      html {
-        background: #F5F5EC; /* Updated Brand Background color */
+      html  {
+        background: lightblue;
       }
       #chart {
         transform: translateX(-50%);
@@ -13,12 +13,14 @@
     </style>
     <script>
       window.app = {
-        state: {}
+        state: {
+
+        }
       };
     </script>
   </head>
   <body style="margin: 0">
-    <div id="error-wrapper" style="display: none; background: #F5F5EC; position: absolute; top: 0; left: 0; right: 0; bottom: 0">
+    <div id="error-wrapper" style="display: none; background: lightcoral; position: absolute; top: 0; left: 0; right: 0; bottom: 0">
       <div id="error-message" style="background: whitesmoke; padding: 30px; border-radius: 15px; position: absolute; text-align: center; top: 50%; left: 50%; transform: translate(-50%, -50%)"></div>
     </div>
 
@@ -40,14 +42,6 @@
 
         const searchParams = new URLSearchParams(window.location.search);
 
-        // --- BRAND COLORS ---
-        const brandColorTitle = #004360;
-        const brandColorDataTrend = #00D3EB;
-        const brandColorBackground = #F5F5EC; // Used in CSS above
-        const brandColorControlLimits = #FFE949;
-        const brandColorDataLabel = brandColorTitle; // Using Title color for labels, change if needed
-        // --------------------
-
         ["labels", "ucl", "lcl", "data", "title"].forEach(function(key) {
           if (searchParams.has(key) === false) {
             write_error_to_screen("missing " + key);
@@ -55,16 +49,13 @@
         });
 
         const params = {
-          // backgroundColor: searchParams.get("backgroundColor"), // No longer reading background color from URL
+          backgroundColor: searchParams.get("backgroundColor"),
           labels: searchParams.get("labels").split(";"),
           data: searchParams.get("data").split(";"),
           ucl: searchParams.get("ucl"),
-          cl: searchParams.get("cl"), // Note: 'cl' (center line) is read but not used in the chart datasets
+          cl: searchParams.get("cl"),
           lcl: searchParams.get("lcl"),
-          title: searchParams.get("title"),
-          data_label_rotation: searchParams.get("data_label_rotation") || 0, // Added default rotation
-          data_type: searchParams.get("data_type"), // Added reading data_type param
-          currency: searchParams.get("currency") // Added reading currency param
+          title: searchParams.get("title")
         };
 
         if (params.ucl === undefined || params.ucl === "") {
@@ -76,8 +67,8 @@
         }
 
         ["labels", "data", "title"].forEach(function(key) {
-          if (params[key] === undefined || params[key] === "" || (Array.isArray(params[key]) && params[key].length === 0)) {
-             write_error_to_screen("missing " + key);
+          if (params[key] === undefined || params[key] === "") {
+            write_error_to_screen("missing " + key);
           }
         });
 
@@ -107,7 +98,7 @@
         }
 
         var data = params.data.map(function (it) {
-          it = String(it).replace(/,/g, ""); // Ensure 'it' is a string before replacing, clean ','
+          it = it.replace(/,/g, ""); // clean , in 
           if (it.slice(-1) === "%") return unfloat(Number(it.slice(0, -1)) / 100);
           if (it === "") return null;
           if (it.slice(0, 1) === "$") return Number(it.slice(1));
@@ -129,11 +120,6 @@
 
         Chart.register(ChartDataLabels);
 
-        // Destroy previous chart instance if it exists
-        if (window.app && window.app.chart) {
-          window.app.chart.destroy();
-        }
-
         app.chart = new Chart(canvas, {
           type: 'line',
           data: {
@@ -143,34 +129,26 @@
                 label: "Metric",
                 data: data.map(n => typeof n === "number" ? unfloat(n) : n),
                 fill: false,
-                borderColor: brandColorDataTrend,      // <-- Updated Data Trendline Color
-                pointBackgroundColor: brandColorDataTrend, // <-- Updated Point Color
-                pointRadius: 5,
-                tension: 0.1 // Optional: makes line slightly curved
+                backgroundColor: params.backgroundColor,
+                pointRadius: 5
               },
               {
                 label: "UCL",
                 data: range(Math.max(data.length, params.labels.length)).map(() => Number(params.ucl)),
                 fill: false,
-                borderColor: brandColorControlLimits,  // <-- Updated UCL Color
-                pointBackgroundColor: brandColorControlLimits, // <-- Updated UCL Point Color
-                borderDash: [5, 5],
-                pointRadius: 0 // Hide points for control lines
+                backgroundColor: params.backgroundColor,
+                borderDash: [5, 5]
               },
               {
                 label: "LCL",
                 data: range(Math.max(data.length, params.labels.length)).map(() => Number(params.lcl)),
                 fill: false,
-                borderColor: brandColorControlLimits,  // <-- Updated LCL Color
-                pointBackgroundColor: brandColorControlLimits, // <-- Updated LCL Point Color
-                borderDash: [5, 5],
-                pointRadius: 0 // Hide points for control lines
-              }
+                backgroundColor: params.backgroundColor,
+                borderDash: [5, 5]
+              }              
             ]
           },
           options: {
-            responsive: true,
-            maintainAspectRatio: false, // Allows chart to fill container height/width better
             layout: {
               padding: 20
             },
@@ -178,122 +156,82 @@
               datalabels: {
                 anchor: "end",
                 align: "top",
-                color: brandColorDataLabel, // <-- Updated Data Label Color
+                color: "black",
                 rotation: params.data_label_rotation,
                 formatter: function (value, context) {
-                   // console.log("context:", context);
-                   if (context.dataset.label === "LCL" || context.dataset.label === "UCL") {
-                     return ""; // Don't show labels for control lines
-                   } else if (value === null || value === undefined) {
-                     return ""; // Don't show label for null/missing data
-                   } else if (data_type === "USD") {
-                     return value.toLocaleString("en-us", { style: "currency", currency: "USD" });
-                   } else if (params.data_type === "currency") {
-                      // Use currency from params or default to USD
-                     return value.toLocaleString("en-us", { style: "currency", currency: params.currency || "USD" });
-                   } else if (data_type === "percentage") {
-                     return unfloat(value * 100) + "%";
-                   } else {
-                     // Format numbers nicely, handle potential large/small numbers if needed
-                     return value.toLocaleString(undefined, { maximumFractionDigits: 2 });
-                   }
+                  // console.log("context:", context);
+                  if (context.dataset.label === "LCL" || context.dataset.label === "UCL") {
+                    return "";
+                  } else if (data_type === "USD") {
+                    return value.toLocaleString("en-us", { style: "currency", currency: "USD" });
+                  } else if (params.data_type === "currency") {
+                    return value.toLocaleString("en-us", { style: "currency", currency: params.currency || "USD" });
+                  } else if (data_type === "percentage") {
+                    return unfloat(value * 100) + "%";
+                  } else {
+                    return value.toLocaleString();
+                  }
                 }
               },
-              legend: {
-                  display: false // Legend remains hidden per original code
-              },
+              legend: false,
               title: {
                 display: true,
                 font: {
-                  size: 48 // Keeping original size, adjust if needed
+                  size: 48
                 },
                 text: params.title,
-                color: brandColorTitle, // <-- Updated Title Color
                 padding: {
                     top: 10,
                     bottom: 30
-                }
-              }
+                }                
+            }              
             },
             scales: {
               x: {
                 grid: {
                   display: false
-                },
-                ticks: {
-                  color: brandColorTitle // Match axis ticks to title color
                 }
               },
               y: {
                 beginAtZero: true,
-                 grid: {
-                   // Optional: Use a light grid color if desired, e.g., related to title color
-                   // color: 'rgba(0, 67, 96, 0.1)' 
-                 },
                 ticks: {
-                  color: brandColorTitle, // Match axis ticks to title color
                   callback: function (value, index, ticks) {
-                    // Using simplified formatting for axes, adjust if needed
                     if (data_type === "percentage") {
                       return unfloat(value * 100) + "%";
                     }
-                     if (data_type === "USD" || params.data_type === "currency") {
-                       const currencyCode = params.currency || "USD";
-                        if (Math.abs(value) >= 1000000000) {
-                           return (value / 1000000000).toLocaleString(undefined, {maximumFractionDigits: 1}) + 'B';
-                        } else if (Math.abs(value) >= 1000000) {
-                           return (value / 1000000).toLocaleString(undefined, {maximumFractionDigits: 1}) + 'M';
-                        } else if (Math.abs(value) >= 1000) {
-                           return (value / 1000).toLocaleString(undefined, {maximumFractionDigits: 1}) + 'K';
-                        } else {
-                           // Basic currency formatting for smaller numbers or non-USD
-                           return value.toLocaleString("en-us", { 
-                             style: "currency", 
-                             currency: currencyCode, 
-                             maximumFractionDigits: (value % 1 === 0) ? 0 : 2 // No decimals for whole numbers
-                           });
-                        }
-                     }
-                     // General number formatting for axes
-                     if (Math.abs(value) >= 1000000000) {
-                       return (value / 1000000000).toLocaleString(undefined, {maximumFractionDigits: 1}) + 'B';
-                     }
-                     if (Math.abs(value) >= 1000000) {
-                       return (value / 1000000).toLocaleString(undefined, {maximumFractionDigits: 1}) + 'M';
-                     }
-                     if (Math.abs(value) >= 1000) {
-                       return (value / 1000).toLocaleString(undefined, {maximumFractionDigits: 1}) + 'K';
-                     }
-                      // Show decimals only if needed for non-currency/non-percentage
-                     return value.toLocaleString(undefined, {maximumFractionDigits: (value % 1 === 0) ? 0 : 2});
+                    
+                    if (data_type === "USD") {
+                      if (value >= 0 && value <= 1) {
+                        return "$" + value.toFixed(2);
+                      } else if (value >= 1000 && value < 1000000) {
+                        return "$" + value / 1000 + "K";
+                      } else if (value >= 1000000 && value < 1000000000) {
+                        return "$" + value / 1000000 + "M";
+                      } else {
+                        return "$" + value;
+                      }                      
+                    } 
+
+
+
+                    if (value >= 0 && value <= 1) {
+                      return value.toFixed(2);
+                    } else if (value >= 1000 && value < 1000000) {
+                      return value / 1000 + "K";
+                    } else if (value >= 1000000 && value < 1000000000) {
+                      return value / 1000000 + "M";
+                    } else {
+                      return value;
+                    }
                   }
-                }
+                }                
               }
             }
           }
         });
-
-         // Resize chart logic (optional but good practice)
-         let resizeTimeout;
-         window.addEventListener('resize', () => {
-             clearTimeout(resizeTimeout);
-             resizeTimeout = setTimeout(() => {
-                 if(app.chart) {
-                     app.chart.resize();
-                 }
-             }, 250); // Debounce resize events
-         });
-
-      } // end render function
-
-      // Initial render
-      try {
-         render();
-      } catch (error) {
-         console.error("Chart rendering failed:", error);
-         // Error already displayed on screen by write_error_to_screen
       }
 
+      render();
     </script>
   </body>
 </html>
