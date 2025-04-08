@@ -3,7 +3,7 @@
   <head>
     <style>
       html  {
-        background: lightblue;
+        background: #F5F5EC;
       }
       #chart {
         transform: translateX(-50%);
@@ -49,7 +49,7 @@
         });
 
         const params = {
-          backgroundColor: '#F5F5EC',
+          backgroundColor:  searchParams.get("backgroundColor"),
           labels: searchParams.get("labels").split(";"),
           data: searchParams.get("data").split(";"),
           ucl: searchParams.get("ucl"),
