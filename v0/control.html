@@ -3,7 +3,7 @@
   <head>
     <style>
       html  {
-        background: lightblue;
+        background: #F5F5EC;
       }
       #chart {
         transform: translateX(-50%);
@@ -136,20 +136,21 @@
                 data: data.map(n => typeof n === "number" ? unfloat(n) : n),
                 fill: false,
                 backgroundColor: params.backgroundColor,
+                borderColor:  params.backgroundColor,
                 pointRadius: 5
               },
               {
                 label: "UCL",
                 data: range(Math.max(data.length, params.labels.length)).map(() => Number(params.ucl)),
                 fill: false,
-                backgroundColor: params.uclColor,
+                borderColor: params.uclColor,
                 borderDash: [5, 5]
               },
               {
                 label: "LCL",
                 data: range(Math.max(data.length, params.labels.length)).map(() => Number(params.lcl)),
                 fill: false,
-                backgroundColor: params.lclColor,
+                borderColor: params.lclColor,
                 borderDash: [5, 5]
               }
             ]
