@@ -2,8 +2,8 @@
 <html>
   <head>
     <style>
-      html {
-        background: #F5F5EC; /* Updated Brand Background color */
+      html  {
+        background: lightblue;
       }
       #chart {
         transform: translateX(-50%);
@@ -13,7 +13,9 @@
     </style>
     <script>
       window.app = {
-        state: {}
+        state: {
+
+        }
       };
     </script>
   </head>
@@ -27,4 +29,209 @@
     </div>
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    <script>
+      function range(n) {
+        const arr = [];
+        for (let i = 0; i < n; i++) arr.push(i);
+        return arr;
+      }
+
+      function render() {
+        const container = document.getElementById("chart-container");
+
+        const searchParams = new URLSearchParams(window.location.search);
+
+        ["labels", "ucl", "lcl", "data", "title"].forEach(function(key) {
+          if (searchParams.has(key) === false) {
+            write_error_to_screen("missing " + key);
+          }
+        });
+
+        const params = {
+          backgroundColor: searchParams.get("backgroundColor"),
+          labels: searchParams.get("labels").split(";"),
+          data: searchParams.get("data").split(";"),
+          ucl: searchParams.get("ucl"),
+          cl: searchParams.get("cl"),
+          lcl: searchParams.get("lcl"),
+          title: searchParams.get("title")
+        };
+
+        if (params.ucl === undefined || params.ucl === "") {
+          write_error_to_screen("missing upper control limit (ucl)");
+        }
+
+        if (params.lcl === undefined || params.lcl === "") {
+          write_error_to_screen("missing lower control limit (lcl)");
+        }
+
+        ["labels", "data", "title"].forEach(function(key) {
+          if (params[key] === undefined || params[key] === "") {
+            write_error_to_screen("missing " + key);
+          }
+        });
+
+        Object.assign(app.state, params);
+
+        console.log("params:", params);
+
+        // round to closest 10 digits
+        function unfloat(number) {
+          return Math.round(number * 1e10) / 1e10
+        }
+
+        function is_percentage_data_type(data) {
+          const valid = data.filter(it => it !== "" && (it.endsWith("%") || isNaN(Number(it)) === false));
+          return valid.length >= 1 && valid.every(it => it.endsWith("%"));
+        }
+
+        function is_usd_data_type(data) {
+          const valid = data.filter(it => it !== "" && (it.startsWith("$") || isNaN(Number(it)) === false));
+          return valid.length >= 1 && valid.every(it => it.startsWith("$"));
+        }
+
+        function write_error_to_screen(message) {
+          document.getElementById("error-message").textContent = message;
+          document.getElementById("error-wrapper").style.display = null;
+          throw new Error(message);
+        }
+
+        var data = params.data.map(function (it) {
+          it = it.replace(/,/g, ""); // clean , in 
+          if (it.slice(-1) === "%") return unfloat(Number(it.slice(0, -1)) / 100);
+          if (it === "") return null;
+          if (it.slice(0, 1) === "$") return Number(it.slice(1));
+          if (isNaN(Number(it)) === false) return Number(it);
+          return null;
+        });
+        console.log("data:", data);
+
+        var data_type;
+        if (params.data_type) data_type = params.data_type;
+        else if (is_percentage_data_type(params.data)) {
+          data_type = "percentage";
+        } else if (is_usd_data_type(params.data)) {
+          data_type = "USD";
+        }
+        console.log({data_type});
+
+        const canvas = document.getElementById('chart');
+
+        Chart.register(ChartDataLabels);
+
+        app.chart = new Chart(canvas, {
+          type: 'line',
+          data: {
+            labels: params.labels,
+            datasets: [
+              {
+                label: "Metric",
+                data: data.map(n => typeof n === "number" ? unfloat(n) : n),
+                fill: false,
+                backgroundColor: params.backgroundColor,
+                pointRadius: 5
+              },
+              {
+                label: "UCL",
+                data: range(Math.max(data.length, params.labels.length)).map(() => Number(params.ucl)),
+                fill: false,
+                backgroundColor: params.backgroundColor,
+                borderDash: [5, 5]
+              },
+              {
+                label: "LCL",
+                data: range(Math.max(data.length, params.labels.length)).map(() => Number(params.lcl)),
+                fill: false,
+                backgroundColor: params.backgroundColor,
+                borderDash: [5, 5]
+              }              
+            ]
+          },
+          options: {
+            layout: {
+              padding: 20
+            },
+            plugins: {
+              datalabels: {
+                anchor: "end",
+                align: "top",
+                color: "black",
+                rotation: params.data_label_rotation,
+                formatter: function (value, context) {
+                  // console.log("context:", context);
+                  if (context.dataset.label === "LCL" || context.dataset.label === "UCL") {
+                    return "";
+                  } else if (data_type === "USD") {
+                    return value.toLocaleString("en-us", { style: "currency", currency: "USD" });
+                  } else if (params.data_type === "currency") {
+                    return value.toLocaleString("en-us", { style: "currency", currency: params.currency || "USD" });
+                  } else if (data_type === "percentage") {
+                    return unfloat(value * 100) + "%";
+                  } else {
+                    return value.toLocaleString();
+                  }
+                }
+              },
+              legend: false,
+              title: {
+                display: true,
+                font: {
+                  size: 48
+                },
+                text: params.title,
+                padding: {
+                    top: 10,
+                    bottom: 30
+                }                
+            }              
+            },
+            scales: {
+              x: {
+                grid: {
+                  display: false
+                }
+              },
+              y: {
+                beginAtZero: true,
+                ticks: {
+                  callback: function (value, index, ticks) {
+                    if (data_type === "percentage") {
+                      return unfloat(value * 100) + "%";
+                    }
+                    
+                    if (data_type === "USD") {
+                      if (value >= 0 && value <= 1) {
+                        return "$" + value.toFixed(2);
+                      } else if (value >= 1000 && value < 1000000) {
+                        return "$" + value / 1000 + "K";
+                      } else if (value >= 1000000 && value < 1000000000) {
+                        return "$" + value / 1000000 + "M";
+                      } else {
+                        return "$" + value;
+                      }                      
+                    } 
+
+
+
+                    if (value >= 0 && value <= 1) {
+                      return value.toFixed(2);
+                    } else if (value >= 1000 && value < 1000000) {
+                      return value / 1000 + "K";
+                    } else if (value >= 1000000 && value < 1000000000) {
+                      return value / 1000000 + "M";
+                    } else {
+                      return value;
+                    }
+                  }
+                }                
+              }
+            }
+          }
+        });
+      }
+
+      render();
+    </script>
+  </body>
+</html>
