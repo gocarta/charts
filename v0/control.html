@@ -27,7 +27,7 @@
     <div id="chart-container" style="height: 100vh; position: relative; width: 100vw;">
       <canvas id="chart"></canvas>
     </div>
-    
+
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
     <script>
@@ -49,13 +49,17 @@
         });
 
         const params = {
-          backgroundColor: searchParams.get("backgroundColor"),
+          backgroundColor: '#F5F5EC',
           labels: searchParams.get("labels").split(";"),
           data: searchParams.get("data").split(";"),
           ucl: searchParams.get("ucl"),
           cl: searchParams.get("cl"),
           lcl: searchParams.get("lcl"),
-          title: searchParams.get("title")
+          title: searchParams.get("title"),
+          titleColor: '#004360',
+          uclColor: '#FFB949',
+          lclColor: '#FFB949',
+          labelColor: '#666666'
         };
 
         if (params.ucl === undefined || params.ucl === "") {
@@ -98,7 +102,7 @@
         }
 
         var data = params.data.map(function (it) {
-          it = it.replace(/,/g, ""); // clean , in 
+          it = it.replace(/,/g, ""); // clean , in
           if (it.slice(-1) === "%") return unfloat(Number(it.slice(0, -1)) / 100);
           if (it === "") return null;
           if (it.slice(0, 1) === "$") return Number(it.slice(1));
@@ -145,7 +149,7 @@
                 fill: false,
                 backgroundColor: params.backgroundColor,
                 borderDash: [5, 5]
-              }              
+              }
             ]
           },
           options: {
@@ -183,8 +187,8 @@
                 padding: {
                     top: 10,
                     bottom: 30
-                }                
-            }              
+                }
+            }
             },
             scales: {
               x: {
@@ -199,7 +203,7 @@
                     if (data_type === "percentage") {
                       return unfloat(value * 100) + "%";
                     }
-                    
+
                     if (data_type === "USD") {
                       if (value >= 0 && value <= 1) {
                         return "$" + value.toFixed(2);
@@ -209,8 +213,8 @@
                         return "$" + value / 1000000 + "M";
                       } else {
                         return "$" + value;
-                      }                      
-                    } 
+                      }
+                    }
 
 
 
@@ -224,7 +228,7 @@
                       return value;
                     }
                   }
-                }                
+                }
               }
             }
           }
