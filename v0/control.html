@@ -18,6 +18,9 @@
         }
       };
     </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Instrumental+Sans:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">
   </head>
   <body style="margin: 0">
     <div id="error-wrapper" style="display: none; background: lightcoral; position: absolute; top: 0; left: 0; right: 0; bottom: 0">
@@ -27,7 +30,7 @@
     <div id="chart-container" style="height: 100vh; position: relative; width: 100vw;">
       <canvas id="chart"></canvas>
     </div>
-    
+
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
     <script>
@@ -49,13 +52,16 @@
         });
 
         const params = {
-          backgroundColor: searchParams.get("backgroundColor"),
+          backgroundColor: '#00D3EB',
           labels: searchParams.get("labels").split(";"),
           data: searchParams.get("data").split(";"),
           ucl: searchParams.get("ucl"),
           cl: searchParams.get("cl"),
           lcl: searchParams.get("lcl"),
-          title: searchParams.get("title")
+          title: searchParams.get("title"),
+          titleColor: '#004360',
+          uclColor: '#FFB949',
+          lclColor: '#FFB949'
         };
 
         if (params.ucl === undefined || params.ucl === "") {
@@ -98,7 +104,7 @@
         }
 
         var data = params.data.map(function (it) {
-          it = it.replace(/,/g, ""); // clean , in 
+          it = it.replace(/,/g, ""); // clean , in
           if (it.slice(-1) === "%") return unfloat(Number(it.slice(0, -1)) / 100);
           if (it === "") return null;
           if (it.slice(0, 1) === "$") return Number(it.slice(1));
@@ -136,16 +142,16 @@
                 label: "UCL",
                 data: range(Math.max(data.length, params.labels.length)).map(() => Number(params.ucl)),
                 fill: false,
-                backgroundColor: params.backgroundColor,
+                backgroundColor: params.uclColor,
                 borderDash: [5, 5]
               },
               {
                 label: "LCL",
                 data: range(Math.max(data.length, params.labels.length)).map(() => Number(params.lcl)),
                 fill: false,
-                backgroundColor: params.backgroundColor,
+                backgroundColor: params.lclColor,
                 borderDash: [5, 5]
-              }              
+              }
             ]
           },
           options: {
@@ -179,12 +185,13 @@
                 font: {
                   size: 48
                 },
+                color: params.titleColor,
                 text: params.title,
                 padding: {
                     top: 10,
                     bottom: 30
-                }                
-            }              
+                }
+            }
             },
             scales: {
               x: {
@@ -199,7 +206,7 @@
                     if (data_type === "percentage") {
                       return unfloat(value * 100) + "%";
                     }
-                    
+
                     if (data_type === "USD") {
                       if (value >= 0 && value <= 1) {
                         return "$" + value.toFixed(2);
@@ -209,8 +216,8 @@
                         return "$" + value / 1000000 + "M";
                       } else {
                         return "$" + value;
-                      }                      
-                    } 
+                      }
+                    }
 
 
 
@@ -224,7 +231,7 @@
                       return value;
                     }
                   }
-                }                
+                }
               }
             }
           }
