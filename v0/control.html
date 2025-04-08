@@ -138,8 +138,10 @@
                 backgroundColor: params.backgroundColor,
                 borderColor:  params.backgroundColor,
                 pointBorderColor: '#fff',
+                borderWidth: 2,
                 pointHoverRadius: 8,
-                pointRadius: 5
+                pointRadius: 5,
+                tension: 0.1
               },
               {
                 label: "UCL",
@@ -188,13 +190,13 @@
               title: {
                 display: true,
                 font: {
-                  size: 48
+                  size: 32
                 },
                 color: params.titleColor,
                 text: params.title,
                 padding: {
                     top: 10,
-                    bottom: 30
+                    bottom: 20
                 }
             }
             },
