@@ -137,6 +137,8 @@
                 fill: false,
                 backgroundColor: params.backgroundColor,
                 borderColor:  params.backgroundColor,
+                pointBorderColor: '#fff',
+                pointHoverRadius: 8,
                 pointRadius: 5
               },
               {
@@ -144,14 +146,16 @@
                 data: range(Math.max(data.length, params.labels.length)).map(() => Number(params.ucl)),
                 fill: false,
                 borderColor: params.uclColor,
-                borderDash: [5, 5]
+                borderDash: [5, 5],
+                pointRadius: 0
               },
               {
                 label: "LCL",
                 data: range(Math.max(data.length, params.labels.length)).map(() => Number(params.lcl)),
                 fill: false,
                 borderColor: params.lclColor,
-                borderDash: [5, 5]
+                borderDash: [5, 5],
+                pointRadius: 0
               }
             ]
           },
