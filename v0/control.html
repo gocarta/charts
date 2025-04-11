@@ -146,7 +146,7 @@
                 backgroundColor: params.backgroundColor,
                 borderColor:  params.backgroundColor,
                 pointBorderColor: '#fff',
-                borderWidth: 2,
+                borderWidth: 3,
                 pointHoverRadius: 8,
                 pointRadius: 5,
                 tension: 0.1
@@ -174,7 +174,7 @@
               padding: 20
             },
             plugins: {
-              datalabels: {
+              datalabels: {   //configuration for the datapoint labels
                 anchor: "end",
                 align: "top",
                 color: "black",
@@ -192,6 +192,10 @@
                   } else {
                     return value.toLocaleString();
                   }
+                },
+                font: { 
+                size: 16,
+                weight: 'bold' 
                 }
               },
               legend: false,
@@ -209,12 +213,18 @@
             }
             },
             scales: {
-              x: {
+              x: {    // x -xis configuration
                 grid: {
                   display: false
+                },
+                ticks: { // Add ticks object for X-axis
+                  font: {
+                    size: 16,
+                    weight: 'bold' // <--- Set desired font size for X-axis labels
+                  }
                 }
               },
-              y: {
+              y: {   // y-axis configuration
                 beginAtZero: false,
                 ticks: {
                   callback: function (value, index, ticks) {
@@ -245,7 +255,12 @@
                     } else {
                       return value;
                     }
+                  },
+                  font: { 
+                  size: 16,
+                  weight: 'bold' 
                   }
+                  
                 }
               }
             }
