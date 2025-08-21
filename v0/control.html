@@ -40,7 +40,7 @@
 	</div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
     <script>
       function range(n) {
         const arr = [];
@@ -60,7 +60,8 @@
         });
 
         const params = {
-          backgroundColor: '#00D3EB',
+          background: searchParams.get("background") || searchParams.get("bg"),
+          lineColor: searchParams.get("lineColor") || '#00D3EB', // this is the color of the line
           labels: searchParams.get("labels").split(";"),
           data: searchParams.get("data").split(";"),
           ucl: searchParams.get("ucl"),
@@ -68,9 +69,13 @@
           lcl: searchParams.get("lcl"),
           title: searchParams.get("title"),
           titleColor: '#004360',
-          uclColor: '#FFB949',
-          lclColor: '#FFB949'
+          uclColor: searchParams.get("uclColor") || '#FFB949',
+          lclColor: searchParams.get("lclColor") || '#FFB949'
         };
+
+        if (params.background) {
+          document.querySelector("html").style.background = params.background;
+        }
 
         if (params.ucl === undefined || params.ucl === "") {
           write_error_to_screen("missing upper control limit (ucl)");
@@ -143,13 +148,13 @@
                 label: "Metric",
                 data: data.map(n => typeof n === "number" ? unfloat(n) : n),
                 fill: false,
-                backgroundColor: params.backgroundColor,
-                borderColor:  params.backgroundColor,
+                backgroundColor: params.lineColor,
+                borderColor:  params.lineColor,
                 pointBorderColor: '#fff',
                 borderWidth: 3,
                 pointHoverRadius: 8,
                 pointRadius: 5,
-                tension: 0.1
+                tension: 0.1             
               },
               {
                 label: "UCL",
