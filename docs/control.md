@@ -16,5 +16,7 @@ https://officeofperformancemanagement.github.io/charts/v0/control.html?title=Per
 | name | example | description |
 | ---- | ------- | ----------- |
 | title | Performance Metric Visualization | title of the chart |
+| logo  | https://example.org/logo.png | URL to Logo to Display at Bottom of Chart |
+| logo_alt | City of Example Logo | Alternative text for image |
 
 <img width="776" alt="Screenshot 2025-04-05 at 9 16 26 PM" src="https://github.com/user-attachments/assets/57359324-d8ff-47b6-97b1-6d8f3080bd99" />
